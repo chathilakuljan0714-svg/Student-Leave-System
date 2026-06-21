@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDD Portal - OLMS | KDU Southern Campus</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628; --navy2: #0f2040; --navy3: #1a3360;
+  --gold: #c8a84b; --gold2: #e8c96b;
+  --white: #f4f2ee; --muted: #8a9ab5;
+  --danger: #c0392b; --success: #1e8a4a; --pending: #c47f17;
+  --border: rgba(200,168,75,0.18);
+  --card: rgba(255,255,255,0.04);
+  --font: 'IBM Plex Sans', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--navy); color: var(--white); min-height: 100vh; }
+
+/* ── AUTH ── */
+.auth-container { display: flex; min-height: 100vh; }
+.auth-left { flex: 1; background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%); display: flex; align-items: center; justify-content: center; padding: 40px; }
+.auth-right { flex: 1; background: var(--navy2); display: flex; align-items: center; justify-content: center; padding: 40px; }
+.logo-section { text-align: center; }
+.logo-container { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 40px; }
+.logo-img { width: 100px; height: 100px; border-radius: 12px; border: 3px solid #2ecc71; flex-shrink: 0; box-shadow: 0 8px 16px rgba(46,204,113,0.2); object-fit: contain; background: rgba(255,255,255,0.06); }
+.logo-text { text-align: left; }
+.logo-text .olms { font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.2; letter-spacing: 0.5px; }
+.logo-text .kdusc { font-size: 14px; color: #2ecc71; margin-top: 4px; letter-spacing: 2px; font-weight: 600; }
+
+.auth-form-container { width: 100%; max-width: 400px; }
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 1px solid var(--border); }
+.auth-tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border: none; background: transparent; transition: all 0.15s; border-bottom: 2px solid transparent; font-family: var(--font); }
+.auth-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.auth-content { display: none; }
+.auth-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.form-row { margin-bottom: 14px; }
+label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.08em; }
+input, select, textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; font-family: var(--font); font-size: 13px; color: var(--white); outline: none; transition: border-color 0.15s; }
+input:focus, select:focus, textarea:focus { border-color: rgba(200,168,75,0.5); }
+select option { background: var(--navy2); }
+.btn { padding: 10px 20px; border-radius: 4px; font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; border: none; width: 100%; margin-top: 10px; transition: all 0.2s; }
+.btn-primary { background: var(--gold); color: var(--navy); font-weight: 600; }
+.btn-primary:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(200,168,75,0.3); }
+.btn-primary:active { transform: translateY(0); }
+.auth-link { font-size: 12px; color: var(--muted); margin-top: 15px; text-align: center; }
+.auth-link a { color: var(--gold); text-decoration: none; cursor: pointer; }
+.message { padding: 10px; border-radius: 4px; font-size: 12px; margin-bottom: 15px; display: none; }
+.message.success { background: rgba(30,138,74,0.2); color: #3dbf71; border: 1px solid rgba(30,138,74,0.3); }
+.message.error { background: rgba(192,57,43,0.2); color: #e05555; border: 1px solid rgba(192,57,43,0.3); }
+.message.active { display: block; }
+
+/* ── APP LAYOUT ── */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; background: var(--navy2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+.main { margin-left: 240px; flex: 1; min-height: 100vh; }
+.sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.sidebar-logo-img { width: 50px; height: 50px; border-radius: 8px; border: 2px solid #2ecc71; flex-shrink: 0; object-fit: contain; background: rgba(255,255,255,0.06); }
+.sidebar-logo-text .olms { font-size: 14px; font-weight: 700; color: #ffffff; line-height: 1.2; letter-spacing: 0.5px; }
+.sidebar-logo-text .kdusc { font-size: 11px; color: #2ecc71; letter-spacing: 1.5px; font-weight: 600; margin-top: 2px; }
+.role-badge { margin: 14px 20px 4px; background: rgba(200,168,75,0.12); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; }
+.role-badge .label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.role-badge .name { font-size: 13px; font-weight: 500; color: var(--gold); margin-top: 2px; }
+.role-badge .id { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.nav { padding: 12px 0; flex: 1; }
+.nav-section { font-size: 10px; color: var(--muted); text-transform: uppercase; padding: 8px 20px 4px; letter-spacing: 0.1em; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; font-size: 13px; color: rgba(244,242,238,0.7); border-left: 2px solid transparent; transition: all 0.15s; }
+.nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--gold); background: rgba(200,168,75,0.08); border-left-color: var(--gold); font-weight: 500; }
+.nav-item .icon { width: 16px; text-align: center; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+.logout-btn { width: 100%; padding: 8px; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.logout-btn:hover { color: var(--danger); border-color: rgba(192,57,43,0.4); }
+
+/* ── TOPBAR ── */
+.topbar { background: var(--navy2); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; }
+.topbar-title { font-size: 14px; font-weight: 500; }
+.topbar-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.topbar-right { display: flex; gap: 12px; align-items: center; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--navy3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--gold); }
+
+.content { padding: 28px; }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.2s; }
+
+/* ── TABLES ── */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-title { font-size: 13px; font-weight: 500; text-transform: uppercase; color: var(--muted); }
+.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+.table-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(200,168,75,0.04); }
+.table-label { font-size: 12px; font-weight: 500; color: var(--white); }
+.table-badge-count { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: rgba(200,168,75,0.07); }
+th { text-align: left; padding: 10px 14px; font-size: 10px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; letter-spacing: 0.06em; }
+td { padding: 11px 14px; font-size: 12px; border-bottom: 1px solid rgba(200,168,75,0.06); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.td-name { font-weight: 500; }
+.td-index { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 2px 9px; border-radius: 3px; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-approved { background: rgba(30,138,74,0.15); color: #3dbf71; }
+.badge-pending  { background: rgba(196,127,23,0.12); color: #e8a94b; }
+.badge-rejected { background: rgba(192,57,43,0.12); color: #e05555; }
+
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.stat-value { font-size: 28px; font-weight: 600; color: var(--gold); margin-top: 4px; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── PANEL ── */
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 20px; }
+.panel h3 { font-size: 12px; font-weight: 500; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; letter-spacing: 0.08em; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(5,10,20,0.85); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--navy2); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.5); animation: slideUp 0.22s ease; }
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--navy2); z-index: 5; border-radius: 10px 10px 0 0; }
+.modal-head h3 { font-size: 14px; font-weight: 500; }
+.modal-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1; }
+.modal-close:hover { color: var(--danger); }
+.modal-body { padding: 18px 20px; }
+
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(200,168,75,0.06); font-size: 12px; }
+.detail-row:last-child { border-bottom: none; }
+.detail-row .dr-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.detail-row .dr-val { color: var(--white); text-align: right; max-width: 60%; }
+
+/* ── APPROVAL CHAIN ── */
+.chain-wrap { margin: 16px 0; }
+.chain-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.chain { display: flex; gap: 0; position: relative; }
+.chain::before { content: ''; position: absolute; top: 16px; left: 18px; right: 18px; height: 1px; background: var(--border); z-index: 0; }
+.chain-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
+.chain-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 1px solid var(--border); background: var(--navy); }
+.chain-dot.approved { background: rgba(30,138,74,0.2); border-color: #3dbf71; color: #3dbf71; }
+.chain-dot.rejected { background: rgba(192,57,43,0.2); border-color: #e05555; color: #e05555; }
+.chain-dot.pending  { background: rgba(196,127,23,0.15); border-color: #e8a94b; color: #e8a94b; }
+.chain-lbl { font-size: 9px; color: var(--muted); text-align: center; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── DECISION PANEL ── */
+.decision-panel { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.decision-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.decision-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+.decision-btns button { flex: 1; padding: 9px; border-radius: 4px; font-family: var(--font); font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+.db-approve { background: rgba(30,138,74,0.12); border-color: rgba(30,138,74,0.3); color: #3dbf71; }
+.db-approve:hover, .db-approve.sel { background: rgba(30,138,74,0.25); }
+.db-reject { background: rgba(192,57,43,0.12); border-color: rgba(192,57,43,0.3); color: #e05555; }
+.db-reject:hover, .db-reject.sel { background: rgba(192,57,43,0.25); }
+.comment-box { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; color: var(--white); font-family: var(--font); font-size: 12px; resize: vertical; min-height: 72px; margin-bottom: 12px; outline: none; }
+.comment-box:focus { border-color: rgba(200,168,75,0.5); }
+.submit-btn { width: 100%; padding: 10px; background: var(--gold); color: var(--navy); border: none; border-radius: 4px; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.submit-btn:hover { background: var(--gold2); }
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.no-action-note { font-size: 11px; color: var(--muted); text-align: center; padding: 10px 0; font-style: italic; }
+
+/* ── SEARCH ── */
+.search-input { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 4px; padding: 7px 12px; color: var(--white); font-family: var(--font); font-size: 12px; outline: none; width: 200px; }
+.search-input:focus { border-color: rgba(200,168,75,0.4); }
+.search-input::placeholder { color: var(--muted); }
+
+/* ── BUTTONS ── */
+.btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 3px; font-family: var(--font); cursor: pointer; border: none; font-weight: 500; }
+.btn-gold { background: var(--gold); color: var(--navy); }
+.btn-gold:hover { background: var(--gold2); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--white); padding: 7px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: var(--font); }
+.btn-outline:hover { background: var(--card); }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(50px); background: var(--navy2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 20px; font-size: 13px; color: var(--gold); z-index: 999; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.hidden { display: none !important; }
+.sep-line { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     AUTH SECTION
+═══════════════════════════════════════════════════════ -->
+<div id="authSection">
+  <div class="auth-container">
+    <div class="auth-left">
+      <div class="logo-section">
+        <div class="logo-container">
+          <img src="KDU-LOGO-ORIGINAL-5x4-inch-copy.png" class="logo-img">
+          <img src="output-onlinepngtools.jpg" class="logo-img">
+          <div class="logo-text">
+            <div class="olms">OLMS</div>
+            <div class="kdusc">KDUSC</div>
+          </div>
+        </div>
+        <h2 style="margin-bottom: 8px; font-size: 22px;">Online Leave Management</h2>
+        <p style="color: var(--muted); font-size: 13px;">KDU Southern Campus</p>
+        <div style="margin-top: 28px; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px;">
+          <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px;">Senior Deputy Dean — Portal</div>
+          <div style="font-size: 12px; color: var(--muted); line-height: 1.8;">
+            Reviews and approves cadet leave applications forwarded by the Squadron Commander.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form-container">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchAuthTab('signup')">Sign Up</button>
+          <button class="auth-tab" onclick="switchAuthTab('login')">Login</button>
+        </div>
+
+        <!-- SIGN UP -->
+        <div id="signup" class="auth-content active">
+          <h3 style="margin-bottom: 20px; font-size: 16px;">Create SDD Account</h3>
+          <div class="message" id="signupMessage"></div>
+          <div class="form-row"><label>Full Name</label><input type="text" id="signupName" placeholder="Brig. S. Weerasinghe"></div>
+          <div class="form-row"><label>Service Number</label><input type="text" id="signupServiceNo" placeholder="KDU/SDD/2024/001"></div>
+          <div class="form-row"><label>Email</label><input type="email" id="signupEmail" placeholder="sdd@kdu.lk"></div>
+          <div class="form-row"><label>Password</label><input type="password" id="signupPassword" placeholder="Enter password"></div>
+          <div class="form-row"><label>Confirm Password</label><input type="password" id="signupConfirm" placeholder="Confirm password"></div>
+          <button type="button" class="btn btn-primary" onclick="doSignup()">Create Account</button>
+          <div class="auth-link">Already have an account? <a onclick="switchAuthTab('login')">Login here</a></div>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="login" class="auth-content">
+          <h3 style="margin-bottom: 20px; font-size: 16px;">Senior Deputy Dean Login</h3>
+          <div class="message" id="loginMessage"></div>
+          <div class="form-row"><label>Email or Service No.</label><input type="text" id="loginUsername" placeholder="Email or service number"></div>
+          <div class="form-row"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter') doLogin()"></div>
+          <button type="button" class="btn btn-primary" onclick="doLogin()">🔐 Login</button>
+          <div class="auth-link">No account? <a onclick="switchAuthTab('signup')">Sign up here</a></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     APP SECTION
+═══════════════════════════════════════════════════════ -->
+<div id="appSection" class="hidden">
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <img src="output-onlinepngtools.jpg" class="sidebar-logo-img">
+        <div class="sidebar-logo-text">
+          <div class="olms">OLMS · SDD</div>
+          <div class="kdusc">KDUSC</div>
+        </div>
+      </div>
+      <div class="role-badge">
+        <div class="label">Logged In As</div>
+        <div class="name" id="sbarName">—</div>
+        <div class="id" id="sbarId">—</div>
+      </div>
+      <div class="nav">
+        <div class="nav-section">Navigation</div>
+        <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard', this)">
+          <span class="icon">⊞</span> Dashboard
+        </div>
+        <div class="nav-item" id="nav-pending" onclick="showPage('pending', this)">
+          <span class="icon">⏳</span> Pending Approvals <span id="pendingNavBadge" style="margin-left:auto;background:var(--gold);color:var(--navy);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;"></span>
+        </div>
+        <div class="nav-item" id="nav-all" onclick="showPage('all', this)">
+          <span class="icon">☰</span> All Cadet Leaves
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()">⇠ Log Out</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="pageTitle">Dashboard</div>
+          <div class="topbar-sub">Senior Deputy Dean — Leave Management</div>
+        </div>
+        <div class="topbar-right">
+          <div style="font-size: 11px; color: var(--muted); font-family: var(--mono);" id="topbarDate"></div>
+          <div class="avatar" id="avatarEl">SD</div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- DASHBOARD PAGE -->
+        <div id="page-dashboard" class="page active">
+          <div class="stat-grid" id="dashStats"></div>
+          <div class="section-header">
+            <div class="section-title">Cadet Leaves Awaiting SDD Approval</div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-header">
+              <div>
+                <div class="table-label">Pending — TC ✓ &amp; SC ✓ → Awaiting SDD</div>
+                <div class="table-badge-count" id="dashPendingCount">0 records</div>
+              </div>
+              <input class="search-input" placeholder="Search name / index…" oninput="filterDash(this.value)" />
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Dept</th><th>Applied On</th>
+                  <th>Start</th><th>End</th><th>TC</th><th>SC</th><th>SDD</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dashTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PENDING PAGE -->
+        <div id="page-pending" class="page">
+          <div class="section-header">
+            <div class="section-title">All Pending for SDD Decision</div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-header">
+              <div>
+                <div class="table-label">Cadet Leave Requests — Pending SDD</div>
+                <div class="table-badge-count" id="pendingCount">0 records</div>
+              </div>
+              <input class="search-input" placeholder="Search name / index…" oninput="filterPending(this.value)" />
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Dept</th><th>Leave Type</th>
+                  <th>Start</th><th>End</th><th>TC</th><th>SC</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="pendingTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ALL LEAVES PAGE -->
+        <div id="page-all" class="page">
+          <div class="section-header">
+            <div class="section-title">All Cadet Leave Applications</div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-header">
+              <div>
+                <div class="table-label">Cadet Leaves — Complete List</div>
+                <div class="table-badge-count" id="allCount">0 records</div>
+              </div>
+              <input class="search-input" placeholder="Search name / index…" oninput="filterAll(this.value)" />
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Dept</th><th>Applied On</th>
+                  <th>Start</th><th>End</th><th>TC</th><th>SC</th><th>SDD</th>
+                  <th>Action</th><th>PDF</th>
+                </tr>
+              </thead>
+              <tbody id="allTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /app -->
+</div><!-- /appSection -->
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL — Leave Details + Decision
+═══════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Leave Details</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel" style="margin-bottom: 14px;">
+        <h3>Cadet Details</h3>
+        <div id="modalDetails"></div>
+      </div>
+      <div class="chain-wrap">
+        <div class="chain-title">Approval Chain</div>
+        <div class="chain" id="modalChain"></div>
+      </div>
+      <hr class="sep-line">
+      <div id="decisionPanel"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let sddUsers = JSON.parse(localStorage.getItem('sdd_users')) || [];
+let currentUser = null;
+let currentModalId = null;
+let currentDecision = null;
+
+// ── Demo cadet leave data (from FDSS module) ─────────────────────────────────
+let leaves = JSON.parse(localStorage.getItem('sdd_leaves')) || [
+  { id:7,  dept:'IT',  name:'Ashan De Silva',      index:'CAD/IT/2021/101',   email:'ashan@kdu.ac.lk',  contact:'0777890123', leaveType:'Personal', start:'2026-03-29', end:'2026-03-30', reason:'Family emergency — father hospitalised.',    appliedOn:'2026-03-25', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Pending',  pdfEnabled:false },
+  { id:8,  dept:'IT',  name:'Malith Gunasekara',    index:'CAD/IT/2022/115',   email:'malith@kdu.ac.lk', contact:'0778901234', leaveType:'Medical',  start:'2026-04-02', end:'2026-04-04', reason:'Ongoing treatment for knee injury.',           appliedOn:'2026-03-24', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Pending',  pdfEnabled:false },
+  { id:9,  dept:'BPI', name:'Ishara Herath',        index:'CAD/BPI/2021/204',  email:'ishara@kdu.ac.lk', contact:'0779012345', leaveType:'Personal', start:'2026-04-07', end:'2026-04-08', reason:'Sibling\'s graduation ceremony.',               appliedOn:'2026-03-26', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Pending',  pdfEnabled:false },
+  { id:10, dept:'DS',  name:'Pradeep Rathnayake',   index:'CAD/DS/2020/312',   email:'pradeep@kdu.ac.lk',contact:'0770123456', leaveType:'Medical',  start:'2026-04-03', end:'2026-04-05', reason:'Physiotherapy sessions — sports injury.',       appliedOn:'2026-03-23', tcStatus:'Approved', scStatus:'Rejected', sddStatus:'Pending',  pdfEnabled:false },
+  { id:11, dept:'IT',  name:'Nuwan Jayasinghe',     index:'CAD/IT/2022/119',   email:'nuwan@kdu.ac.lk',  contact:'0771234560', leaveType:'Academic', start:'2026-04-09', end:'2026-04-09', reason:'External academic competition — SLTC.',         appliedOn:'2026-03-27', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Approved', pdfEnabled:true  },
+  { id:12, dept:'QS',  name:'Dilshan Amarasinghe',  index:'CAD/QS/2021/408',   email:'dilshan@kdu.ac.lk',contact:'0772345671', leaveType:'Personal', start:'2026-04-11', end:'2026-04-12', reason:'Parents\' anniversary — family gathering.',     appliedOn:'2026-03-28', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Rejected', pdfEnabled:false },
+  { id:13, dept:'BPI', name:'Tharuka Bandara',      index:'CAD/BPI/2022/217',  email:'tharuka@kdu.ac.lk',contact:'0773456782', leaveType:'Medical',  start:'2026-04-14', end:'2026-04-15', reason:'Dental treatment at Military Hospital.',        appliedOn:'2026-03-29', tcStatus:'Pending',  scStatus:'Pending',  sddStatus:'Pending',  pdfEnabled:false },
+  { id:14, dept:'DS',  name:'Chathura Perera',      index:'CAD/DS/2021/325',   email:'chathura@kdu.ac.lk',contact:'0774567893',leaveType:'Personal', start:'2026-04-16', end:'2026-04-17', reason:'Religious ceremony at home village.',           appliedOn:'2026-03-30', tcStatus:'Approved', scStatus:'Approved', sddStatus:'Pending',  pdfEnabled:false },
+];
+
+// ── Auth helpers ──────────────────────────────────────────────────────────────
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  document.querySelector(`[onclick="switchAuthTab('${tab}')"]`).classList.add('active');
+}
+
+function showMessage(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `message active ${type}`;
+  setTimeout(() => el.classList.remove('active'), 3500);
+}
+
+function doSignup() {
+  const name      = document.getElementById('signupName').value.trim();
+  const serviceNo = document.getElementById('signupServiceNo').value.trim();
+  const email     = document.getElementById('signupEmail').value.trim();
+  const password  = document.getElementById('signupPassword').value;
+  const confirm   = document.getElementById('signupConfirm').value;
+
+  if (!name || !serviceNo || !email || !password || !confirm) {
+    showMessage('signupMessage', 'Please fill all fields', 'error'); return;
+  }
+  if (password !== confirm) {
+    showMessage('signupMessage', 'Passwords do not match', 'error'); return;
+  }
+  if (sddUsers.find(u => u.email === email || u.serviceNo === serviceNo)) {
+    showMessage('signupMessage', 'Email or Service No. already registered', 'error'); return;
+  }
+
+  const newUser = { id: Date.now(), name, serviceNo, email, password,
+    role: 'SENIOR_DEPUTY_DEAN', roleLabel: 'Senior Deputy Dean' };
+  sddUsers.push(newUser);
+  localStorage.setItem('sdd_users', JSON.stringify(sddUsers));
+  showMessage('signupMessage', 'Account created! Redirecting to login…', 'success');
+  setTimeout(() => switchAuthTab('login'), 1500);
+}
+
+function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  const user = sddUsers.find(u =>
+    (u.email === username || u.serviceNo === username) && u.password === password
+  );
+  if (!user) {
+    showMessage('loginMessage', 'Invalid credentials', 'error'); return;
+  }
+
+  currentUser = user;
+  localStorage.setItem('sdd_current', JSON.stringify(user));
+  initApp();
+}
+
+function doLogout() {
+  if (confirm('Logout?')) {
+    currentUser = null;
+    localStorage.removeItem('sdd_current');
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('appSection').classList.add('hidden');
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+  }
+}
+
+function initApp() {
+  document.getElementById('authSection').classList.add('hidden');
+  document.getElementById('appSection').classList.remove('hidden');
+
+  // Sidebar info — show the logged in person's actual name
+  document.getElementById('sbarName').textContent = currentUser.name;
+  document.getElementById('sbarId').textContent = currentUser.serviceNo;
+
+  // Avatar initials — strip rank prefixes like Sgt., Cdt., Brig., Lt., etc.
+  const cleanName = currentUser.name.replace(/^(Sgt\.|Cdt\.|Brig\.|Lt\.|Maj\.|Col\.|Cdr\.|Pte\.|Cpl\.)\s*/i, '').trim();
+  const parts = cleanName.replace(/[^a-zA-Z ]/g, '').trim().split(/\s+/);
+  const initials = parts.length >= 2
+    ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+    : cleanName.substring(0,2).toUpperCase();
+  document.getElementById('avatarEl').textContent = initials;
+
+  // Date
+  document.getElementById('topbarDate').textContent =
+    new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+  buildDashboard();
+  showToast(`Welcome, ${currentUser.name}!`);
+}
+
+// ── Page navigation ───────────────────────────────────────────────────────────
+function showPage(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  const titles = { dashboard: 'Dashboard', pending: 'Pending Approvals', all: 'All Cadet Leaves' };
+  document.getElementById('pageTitle').textContent = titles[pageId] || '';
+  if (pageId === 'dashboard') buildDashboard();
+  if (pageId === 'pending')   buildPending();
+  if (pageId === 'all')       buildAll();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function badgeHTML(status) {
+  const cls = status.toLowerCase();
+  return `<span class="badge badge-${cls}">${status}</span>`;
+}
+
+function pendingForSDD(l) {
+  // Only cadets where TC approved AND SC approved AND SDD still pending
+  return l.tcStatus === 'Approved' && l.scStatus === 'Approved' && l.sddStatus === 'Pending';
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function buildDashboard() {
+  const pending  = leaves.filter(pendingForSDD);
+  const approved = leaves.filter(l => l.sddStatus === 'Approved');
+  const rejected = leaves.filter(l => l.sddStatus === 'Rejected');
+  const total    = leaves.length;
+
+  // Update pending badge on nav
+  const badge = document.getElementById('pendingNavBadge');
+  if (badge) badge.textContent = pending.length > 0 ? pending.length : '';
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Awaiting My Decision</div><div class="stat-value">${pending.length}</div><div class="stat-sub">TC &amp; SC approved</div></div>
+    <div class="stat-card"><div class="stat-label">Approved by Me</div><div class="stat-value">${approved.length}</div><div class="stat-sub">PDF enabled</div></div>
+    <div class="stat-card"><div class="stat-label">Rejected by Me</div><div class="stat-value">${rejected.length}</div><div class="stat-sub">Not approved</div></div>
+    <div class="stat-card"><div class="stat-label">Total Cadets</div><div class="stat-value">${total}</div><div class="stat-sub">All applications</div></div>
+  `;
+
+  renderTable(pending, 'dashTableBody', 'dashPendingCount', true, false);
+}
+
+// ── Pending page ──────────────────────────────────────────────────────────────
+function buildPending(filter='') {
+  const f = filter.toLowerCase();
+  const data = leaves.filter(l => pendingForSDD(l) &&
+    (!f || l.name.toLowerCase().includes(f) || l.index.toLowerCase().includes(f)));
+  // Also update nav badge
+  const allPending = leaves.filter(pendingForSDD);
+  const badge = document.getElementById('pendingNavBadge');
+  if (badge) badge.textContent = allPending.length > 0 ? allPending.length : '';
+
+  document.getElementById('pendingCount').textContent = `${data.length} record${data.length!==1?'s':''}`;
+  document.getElementById('pendingTableBody').innerHTML = data.length === 0
+    ? '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted);">No pending applications</td></tr>'
+    : data.map((l, i) => `<tr>
+        <td>${i+1}</td>
+        <td><div class="td-name">${l.name}</div><div class="td-index">${l.index}</div></td>
+        <td>${l.dept}</td>
+        <td>${l.leaveType}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${l.start}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${l.end}</td>
+        <td>${badgeHTML(l.tcStatus)}</td>
+        <td>${badgeHTML(l.scStatus)}</td>
+        <td><button class="btn-sm btn-gold" onclick="openModal(${l.id})">Review</button></td>
+      </tr>`).join('');
+}
+
+// ── All leaves page ───────────────────────────────────────────────────────────
+function buildAll(filter='') {
+  const data = leaves.filter(l =>
+    !filter || l.name.toLowerCase().includes(filter) || l.index.toLowerCase().includes(filter));
+  document.getElementById('allCount').textContent = `${data.length} record${data.length!==1?'s':''}`;
+  document.getElementById('allTableBody').innerHTML = data.length === 0
+    ? '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted);">No records</td></tr>'
+    : data.map((l, i) => `<tr>
+        <td>${i+1}</td>
+        <td><div class="td-name">${l.name}</div><div class="td-index">${l.index}</div></td>
+        <td>${l.dept}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${l.appliedOn}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${l.start}</td>
+        <td style="font-family:var(--mono);font-size:11px;">${l.end}</td>
+        <td>${badgeHTML(l.tcStatus)}</td>
+        <td>${badgeHTML(l.scStatus)}</td>
+        <td>${badgeHTML(l.sddStatus)}</td>
+        <td><button class="btn-sm btn-outline" onclick="openModal(${l.id})">View</button></td>
+        <td>${l.pdfEnabled
+          ? `<button class="btn-sm btn-gold" onclick="generatePDF(${l.id})">📥 PDF</button>`
+          : `<span style="font-size:10px;color:var(--muted);">—</span>`}</td>
+      </tr>`).join('');
+}
+
+// ── renderTable helper for dashboard ─────────────────────────────────────────
+function renderTable(data, tbodyId, countId, showSDD, showPDF) {
+  document.getElementById(countId).textContent = `${data.length} record${data.length!==1?'s':''}`;
+  const tbody = document.getElementById(tbodyId);
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted);">No applications awaiting your decision</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((l, i) => `<tr>
+    <td>${i+1}</td>
+    <td><div class="td-name">${l.name}</div><div class="td-index">${l.index}</div></td>
+    <td>${l.dept}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${l.appliedOn}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${l.start}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${l.end}</td>
+    <td>${badgeHTML(l.tcStatus)}</td>
+    <td>${badgeHTML(l.scStatus)}</td>
+    ${showSDD ? `<td>${badgeHTML(l.sddStatus)}</td>` : ''}
+    <td><button class="btn-sm btn-gold" onclick="openModal(${l.id})">Review</button></td>
+  </tr>`).join('');
+}
+
+// ── Filter functions ──────────────────────────────────────────────────────────
+function filterDash(v) {
+  const data = leaves.filter(l => pendingForSDD(l) &&
+    (!v || l.name.toLowerCase().includes(v.toLowerCase()) || l.index.toLowerCase().includes(v.toLowerCase())));
+  renderTable(data, 'dashTableBody', 'dashPendingCount', true, false);
+}
+function filterPending(v) { buildPending(v.toLowerCase()); }
+function filterAll(v)     { buildAll(v.toLowerCase()); }
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  currentModalId = id;
+  currentDecision = null;
+  const l = leaves.find(x => x.id === id);
+  if (!l) return;
+
+  document.getElementById('modalTitle').textContent = `Leave — ${l.name}`;
+
+  document.getElementById('modalDetails').innerHTML = `
+    <div class="detail-row"><span class="dr-lbl">Name</span><span class="dr-val">${l.name}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Index No.</span><span class="dr-val" style="font-family:var(--mono)">${l.index}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Email</span><span class="dr-val">${l.email}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Contact</span><span class="dr-val">${l.contact}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Department</span><span class="dr-val">${l.dept}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Leave Type</span><span class="dr-val">${l.leaveType}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Period</span><span class="dr-val" style="font-family:var(--mono)">${l.start} → ${l.end}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Reason</span><span class="dr-val" style="text-align:right">${l.reason}</span></div>
+    <div class="detail-row"><span class="dr-lbl">Applied On</span><span class="dr-val">${l.appliedOn}</span></div>
+  `;
+
+  // Approval chain (Cadet path: TC → SC → SDD)
+  const chainSteps = [
+    { lbl: 'Troop Cmdr', status: l.tcStatus },
+    { lbl: 'Squadron Cmdr', status: l.scStatus },
+    { lbl: 'Sr. Dep. Dean', status: l.sddStatus }
+  ];
+  const icon = s => s==='Approved'?'✓':s==='Rejected'?'✕':'…';
+  document.getElementById('modalChain').innerHTML = chainSteps.map(s => `
+    <div class="chain-step">
+      <div class="chain-dot ${s.status.toLowerCase()}">${icon(s.status)}</div>
+      <div class="chain-lbl">${s.lbl}</div>
+      <div style="font-size:9px;color:${s.status==='Approved'?'#3dbf71':s.status==='Rejected'?'#e05555':'#e8a94b'}">${s.status}</div>
+    </div>`).join('');
+
+  // Decision panel — SDD can act only when TC & SC approved and SDD still pending
+  const canAct = l.tcStatus === 'Approved' && l.scStatus === 'Approved' && l.sddStatus === 'Pending';
+
+  const dp = document.getElementById('decisionPanel');
+  if (!canAct) {
+    const note = l.sddStatus !== 'Pending'
+      ? `Decision already recorded: <strong style="color:${l.sddStatus==='Approved'?'#3dbf71':'#e05555'}">${l.sddStatus}</strong>`
+      : 'Waiting for TC and SC to approve before SDD can act.';
+    dp.innerHTML = `<div class="no-action-note">${note}</div>
+      ${l.pdfEnabled ? `<button class="submit-btn" style="margin-top:12px;" onclick="generatePDF(${l.id}); closeModal();">📥 Generate & Download PDF</button>` : ''}`;
+  } else {
+    dp.innerHTML = `
+      <div class="decision-panel">
+        <div class="decision-title">Submit Decision — Acting as: Senior Deputy Dean</div>
+        <div class="decision-btns">
+          <button class="db-approve" id="db-approve" onclick="selectDecision('Approved')">✓ Approve</button>
+          <button class="db-reject"  id="db-reject"  onclick="selectDecision('Rejected')">✕ Reject</button>
+        </div>
+        <textarea class="comment-box" id="decComment" placeholder="Enter comments or remarks (optional)…"></textarea>
+        <button class="submit-btn" id="submitBtn" onclick="submitDecision()" disabled>Submit Decision</button>
+      </div>`;
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function selectDecision(d) {
+  currentDecision = d;
+  document.getElementById('db-approve').classList.toggle('sel', d==='Approved');
+  document.getElementById('db-reject').classList.toggle('sel',  d==='Rejected');
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitDecision() {
+  if (!currentDecision || !currentModalId) return;
+  const l = leaves.find(x => x.id === currentModalId);
+  if (!l) return;
+
+  l.sddStatus = currentDecision;
+  if (currentDecision === 'Approved') {
+    l.pdfEnabled = true;
+  }
+
+  // Save to localStorage
+  localStorage.setItem('sdd_leaves', JSON.stringify(leaves));
+
+  closeModal();
+  showToast(`✓ Decision recorded: ${currentDecision}`);
+
+  // Auto generate PDF on approval
+  if (currentDecision === 'Approved') {
+    setTimeout(() => generatePDF(l.id), 400);
+  }
+
+  // Refresh current page
+  setTimeout(() => {
+    const activePageEl = document.querySelector('.page.active');
+    if (activePageEl) {
+      const pgId = activePageEl.id.replace('page-','');
+      if (pgId === 'dashboard') buildDashboard();
+      else if (pgId === 'pending') buildPending();
+      else if (pgId === 'all') buildAll();
+    }
+  }, 200);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  currentModalId = null;
+  currentDecision = null;
+}
+
+// ── PDF Generation ────────────────────────────────────────────────────────────
+function generatePDF(id) {
+  const l = leaves.find(x => x.id === id);
+  if (!l || !l.pdfEnabled) {
+    showToast('Leave must be fully approved before PDF generation');
+    return;
+  }
+
+  // Build PDF-style HTML content and trigger print-to-PDF
+  const pdfWindow = window.open('', '_blank');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
+
+  pdfWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Leave Approval — ${l.name}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', Arial, sans-serif; background: #fff; color: #1a1a2e; padding: 40px; max-width: 800px; margin: 0 auto; }
+  .header { border-bottom: 3px solid #0a1628; padding-bottom: 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 20px; }
+  .header-logo { width: 80px; height: 80px; background: linear-gradient(135deg, #0a1628 0%, #1a3360 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: white; }
+  .header-text h1 { font-size: 22px; font-weight: 700; color: #0a1628; }
+  .header-text p  { font-size: 13px; color: #5a6a85; margin-top: 3px; }
+  .doc-title { text-align: center; margin: 24px 0; padding: 16px; background: #f4f2ee; border-left: 4px solid #c8a84b; border-radius: 0 4px 4px 0; }
+  .doc-title h2 { font-size: 18px; font-weight: 700; color: #0a1628; letter-spacing: 1px; text-transform: uppercase; }
+  .doc-title p  { font-size: 12px; color: #5a6a85; margin-top: 4px; }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 11px; font-weight: 600; color: #8a9ab5; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #e0dcd4; padding-bottom: 6px; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { padding: 8px 0; border-bottom: 1px solid #f0ece4; }
+  .field-lbl { font-size: 10px; color: #8a9ab5; text-transform: uppercase; letter-spacing: 0.08em; }
+  .field-val { font-size: 13px; color: #1a1a2e; font-weight: 500; margin-top: 2px; }
+  .chain { display: flex; gap: 0; margin-top: 14px; position: relative; }
+  .chain::before { content:''; position:absolute; top:16px; left:25px; right:25px; height:2px; background:#e0dcd4; z-index:0; }
+  .chain-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
+  .chain-dot { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 2px solid #e0dcd4; background: #fff; }
+  .dot-approved { background: #e8f8ee; border-color: #1e8a4a; color: #1e8a4a; }
+  .dot-rejected { background: #fde8e8; border-color: #c0392b; color: #c0392b; }
+  .chain-lbl { font-size: 10px; color: #5a6a85; text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
+  .chain-status { font-size: 9px; font-weight: 600; }
+  .approval-box { background: #e8f8ee; border: 2px solid #1e8a4a; border-radius: 6px; padding: 16px; text-align: center; margin-top: 24px; }
+  .approval-box h3 { font-size: 16px; font-weight: 700; color: #1e8a4a; }
+  .approval-box p { font-size: 12px; color: #5a6a85; margin-top: 4px; }
+  .signature-area { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0dcd4; }
+  .sig-block { text-align: center; }
+  .sig-line { border-bottom: 1px solid #0a1628; margin-bottom: 6px; padding-bottom: 30px; }
+  .sig-label { font-size: 10px; color: #5a6a85; text-transform: uppercase; letter-spacing: 0.08em; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e0dcd4; display: flex; justify-content: space-between; font-size: 10px; color: #8a9ab5; }
+  @media print { body { padding: 20px; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo">🎓</div>
+    <div class="header-text">
+      <h1>KDU Southern Campus</h1>
+      <p>Online Leave Management System (OLMS) — Official Document</p>
+    </div>
+  </div>
+
+  <div class="doc-title">
+    <h2>Cadet Leave Approval Letter</h2>
+    <p>Approved by Senior Deputy Dean — ${dateStr}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cadet Information</div>
+    <div class="grid">
+      <div class="field"><div class="field-lbl">Full Name</div><div class="field-val">${l.name}</div></div>
+      <div class="field"><div class="field-lbl">Index Number</div><div class="field-val" style="font-family:'IBM Plex Mono',monospace">${l.index}</div></div>
+      <div class="field"><div class="field-lbl">Department</div><div class="field-val">${l.dept}</div></div>
+      <div class="field"><div class="field-lbl">Contact</div><div class="field-val">${l.contact}</div></div>
+      <div class="field"><div class="field-lbl">Email</div><div class="field-val">${l.email}</div></div>
+      <div class="field"><div class="field-lbl">Applied On</div><div class="field-val">${l.appliedOn}</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Leave Details</div>
+    <div class="grid">
+      <div class="field"><div class="field-lbl">Leave Type</div><div class="field-val">${l.leaveType}</div></div>
+      <div class="field"><div class="field-lbl">Duration</div><div class="field-val" style="font-family:'IBM Plex Mono',monospace">${l.start} → ${l.end}</div></div>
+    </div>
+    <div class="field" style="margin-top:8px;"><div class="field-lbl">Reason</div><div class="field-val">${l.reason}</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Approval Chain</div>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="chain-dot ${l.tcStatus==='Approved'?'dot-approved':'dot-rejected'}">${l.tcStatus==='Approved'?'✓':'✕'}</div>
+        <div class="chain-lbl">Troop Cmdr</div>
+        <div class="chain-status" style="color:${l.tcStatus==='Approved'?'#1e8a4a':'#c0392b'}">${l.tcStatus}</div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-dot ${l.scStatus==='Approved'?'dot-approved':'dot-rejected'}">${l.scStatus==='Approved'?'✓':'✕'}</div>
+        <div class="chain-lbl">Squadron Cmdr</div>
+        <div class="chain-status" style="color:${l.scStatus==='Approved'?'#1e8a4a':'#c0392b'}">${l.scStatus}</div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-dot dot-approved">✓</div>
+        <div class="chain-lbl">Sr. Dep. Dean</div>
+        <div class="chain-status" style="color:#1e8a4a">Approved</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="approval-box">
+    <h3>✓ LEAVE APPROVED</h3>
+    <p>This leave has been fully approved through the official KDU Southern Campus approval chain.</p>
+  </div>
+
+  <div class="signature-area">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">Troop Commander Signature</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">Senior Deputy Dean Signature</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Generated: ${now.toLocaleString('en-GB')}</span>
+    <span>OLMS — KDU Southern Campus | Ref: CADET-${l.id}-${l.start}</span>
+  </div>
+
+  <script>
+    window.onload = function() { window.print(); };
+  <\/script>
+</body>
+</html>`);
+  pdfWindow.document.close();
+  showToast('✓ PDF generated — printing dialog opened');
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── ESC key ───────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Auto-login if session exists ──────────────────────────────────────────────
+(function() {
+  const saved = localStorage.getItem('sdd_current');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    initApp();
+  }
+})();
+</script>
+</body>
+</html>
