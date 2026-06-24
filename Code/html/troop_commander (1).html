@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Troop Commander — OLMS | KDU Southern Campus</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0a1628;--navy2:#0f2040;--navy3:#1a3360;--green:#2ecc71;--green2:#27ae60;--white:#f4f2ee;--muted:#8a9ab5;--danger:#c0392b;--border:rgba(46,204,113,.18);--card:rgba(255,255,255,.04);--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--navy);color:var(--white);min-height:100vh;}
+.hidden{display:none!important;}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);padding:24px;}
+.auth-card{width:100%;max-width:400px;background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:40px 36px;}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo .crest{width:64px;height:64px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:10px;}
+.auth-logo h2{font-size:20px;font-weight:600;}
+.auth-logo p{font-size:12px;color:var(--muted);margin-top:4px;}
+.role-pill{display:inline-block;background:rgba(46,204,113,.1);border:1px solid var(--border);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:600;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;}
+.form-row{margin-bottom:14px;}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;}
+input,select,textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:var(--font);font-size:13px;color:var(--white);outline:none;transition:border-color .15s;}
+input:focus,select:focus{border-color:rgba(46,204,113,.5);}
+select option{background:var(--navy2);}
+textarea{min-height:70px;resize:vertical;}
+.btn-login{background:var(--green);color:#fff;font-weight:600;width:100%;margin-top:10px;padding:11px;border-radius:6px;font-family:var(--font);font-size:13px;cursor:pointer;border:none;transition:all .2s;}
+.btn-login:hover{background:var(--green2);}
+.auth-msg{padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:12px;display:none;}
+.auth-msg.show{display:block;}
+.auth-msg.error{background:rgba(192,57,43,.15);color:#e05555;border:1px solid rgba(192,57,43,.3);}
+.app{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+.main{margin-left:240px;flex:1;min-height:100vh;}
+.sidebar-logo{padding:18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sl-crest{width:38px;height:38px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.sl-text .olms{font-size:13px;font-weight:700;color:#fff;}
+.sl-text .kdu{font-size:10px;color:var(--green);letter-spacing:1.5px;font-weight:600;margin-top:1px;}
+.role-badge{margin:12px 16px 4px;background:rgba(46,204,113,.08);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.rb-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.rb-name{font-size:13px;font-weight:600;color:var(--green);margin-top:2px;}
+.rb-unit{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.nav{padding:10px 0;flex:1;overflow-y:auto;}
+.nav-sec{font-size:10px;color:var(--muted);text-transform:uppercase;padding:8px 20px 4px;letter-spacing:.1em;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;font-size:13px;color:rgba(244,242,238,.7);border-left:2px solid transparent;transition:all .15s;}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.04);}
+.nav-item.active{color:var(--green);background:rgba(46,204,113,.08);border-left-color:var(--green);font-weight:500;}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);}
+.logout-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:var(--font);font-size:12px;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{color:var(--danger);}
+.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:13px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:14px;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-user{font-size:12px;color:var(--green);font-family:var(--mono);background:rgba(46,204,113,.08);border:1px solid var(--border);border-radius:4px;padding:4px 10px;}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--navy3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--green);}
+.content{padding:24px 28px;}
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .2s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.stat-value{font-size:24px;font-weight:600;color:var(--green);margin-top:4px;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tab{padding:8px 18px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.tab.active{color:var(--green);border-bottom-color:var(--green);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;overflow-x:auto;}
+.table-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(46,204,113,.04);}
+.tbl-label{font-size:12px;font-weight:500;}
+table{width:100%;border-collapse:collapse;min-width:650px;}
+thead{background:rgba(46,204,113,.06);}
+th{text-align:left;padding:9px 13px;font-size:10px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.06em;}
+td{padding:10px 13px;font-size:12px;border-bottom:1px solid rgba(46,204,113,.05);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.td-name{font-weight:500;}
+.td-idx{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.type-tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.type-tag.ds{background:rgba(37,99,176,.15);color:#93c5fd;}
+.type-tag.cd{background:rgba(124,58,237,.15);color:#c4b5fd;}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;}
+.badge-approved{background:rgba(30,138,74,.15);color:#3dbf71;}
+.badge-pending{background:rgba(196,127,23,.12);color:#e8a94b;}
+.badge-rejected{background:rgba(192,57,43,.12);color:#e05555;}
+.badge-na{background:rgba(100,116,139,.12);color:#94a3b8;}
+.action-btns{display:flex;gap:5px;flex-wrap:nowrap;}
+.btn-approve{padding:5px 11px;border-radius:3px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(30,138,74,.4);background:rgba(30,138,74,.12);color:#3dbf71;transition:all .15s;white-space:nowrap;}
+.btn-approve:hover{background:rgba(30,138,74,.28);}
+.btn-reject{padding:5px 11px;border-radius:3px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(192,57,43,.4);background:rgba(192,57,43,.12);color:#e05555;transition:all .15s;white-space:nowrap;}
+.btn-reject:hover{background:rgba(192,57,43,.28);}
+.btn-details{padding:5px 10px;border-radius:3px;font-family:var(--font);font-size:11px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;}
+.btn-details:hover{color:var(--white);}
+.info-banner{background:rgba(46,204,113,.06);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--muted);line-height:1.5;}
+.info-banner strong{color:var(--green);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal.open{display:flex;}
+.modal-box{background:var(--navy2);border:1px solid var(--border);border-radius:10px;max-width:500px;width:90%;padding:0;max-height:85vh;overflow-y:auto;}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{font-size:14px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;}
+.modal-body{padding:18px 22px 22px;}
+.modal-row{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid rgba(46,204,113,.06);}
+.modal-row:last-child{border-bottom:none;}
+.modal-key{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;min-width:120px;}
+.modal-val{font-size:12px;color:var(--white);}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600;color:var(--green);z-index:999;opacity:0;transition:all .3s;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div id="authSection">
+<div class="auth-page">
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="crest">⚔️</div>
+    <h2>OLMS — Troop Commander</h2>
+    <p>KDU Southern Campus</p>
+  </div>
+  <div style="text-align:center;margin-bottom:18px;"><span class="role-pill">Troop Commander</span></div>
+  <div id="authMsg" class="auth-msg error"></div>
+  <div class="form-row"><label>Username</label><input type="text" id="loginUser" placeholder="e.g. troop1"></div>
+  <div class="form-row"><label>Password</label><input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  <button class="btn-login" onclick="doLogin()">Sign In</button>
+  <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px;">Demo: troop1 / troop2 / troop3 — password: troop123</p>
+</div>
+</div>
+</div>
+
+<div id="appSection" class="hidden">
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sl-crest">⚔️</div>
+      <div class="sl-text"><div class="olms">OLMS</div><div class="kdu">TROOP PORTAL</div></div>
+    </div>
+    <div class="role-badge">
+      <div class="rb-label">Troop Commander</div>
+      <div class="rb-name" id="rbName">Name</div>
+      <div class="rb-unit" id="rbUnit">Unit</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-sec">Menu</div>
+      <div class="nav-item active" onclick="showView('dashboard',this)">📊 Dashboard</div>
+      <div class="nav-item" onclick="showView('dayscholar',this)">🏠 Day Scholar Queue</div>
+      <div class="nav-item" onclick="showView('cadet',this)">🎖️ Cadet Queue</div>
+      <div class="nav-item" onclick="showView('history',this)">📋 History</div>
+    </nav>
+    <div class="sidebar-footer"><button class="logout-btn" onclick="logout()">Logout</button></div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="pageTitle">Dashboard</div>
+        <div style="font-size:11px;color:var(--muted);">Handles both Day Scholar (Stage 2) & Cadet (Stage 1) leave approvals</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user" id="topUser">TC</span>
+        <div class="avatar" id="avatarEl">TC</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="page active" id="dashboard">
+        <div class="info-banner">
+          <strong>Dual Role:</strong> You approve <strong>Day Scholar</strong> leaves at <em>Stage 2</em> (after HOD approval) and <strong>Cadet</strong> leaves at <em>Stage 1</em> (direct from student). Only your assigned troop members appear here.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">DS Pending</div><div class="stat-value" id="sDsPending">0</div><div class="stat-sub">Day Scholar Stage 2</div></div>
+          <div class="stat-card"><div class="stat-label">Cadet Pending</div><div class="stat-value" id="sCdPending">0</div><div class="stat-sub">Cadet Stage 1</div></div>
+          <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-value" id="sApproved">0</div><div class="stat-sub">Total by you</div></div>
+          <div class="stat-card"><div class="stat-label">Rejected</div><div class="stat-value" id="sRejected">0</div><div class="stat-sub">Total by you</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Quick view — all pending</div>
+        <div class="table-wrap"><div class="table-hdr"><span class="tbl-label">All Pending — Your Troop</span></div>
+        <table><thead><tr><th>Student</th><th>Type</th><th>Leave Type</th><th>From</th><th>To</th><th>Stage</th><th>Actions</th></tr></thead>
+        <tbody id="allPendingTbody"></tbody></table></div>
+      </div>
+
+      <div class="page" id="dayscholar">
+        <div class="info-banner"><strong>Day Scholar — Stage 2:</strong> These leaves have already been approved by the HOD. Your approval finalises it. Student can then download the PDF.</div>
+        <div class="table-wrap"><div class="table-hdr"><span class="tbl-label">Day Scholar — Pending Your Approval</span></div>
+        <table><thead><tr><th>Student</th><th>Index</th><th>Leave Type</th><th>From</th><th>To</th><th>HOD Decision</th><th>Actions</th></tr></thead>
+        <tbody id="dsTbody"></tbody></table></div>
+      </div>
+
+      <div class="page" id="cadet">
+        <div class="info-banner"><strong>Cadet — Stage 1:</strong> After your approval, applications move to the Squadron Commander.</div>
+        <div class="table-wrap"><div class="table-hdr"><span class="tbl-label">Cadet — Pending Your Approval</span></div>
+        <table><thead><tr><th>Student</th><th>Index</th><th>Leave Type</th><th>From</th><th>To</th><th>Actions</th></tr></thead>
+        <tbody id="cdTbody"></tbody></table></div>
+      </div>
+
+      <div class="page" id="history">
+        <div class="table-wrap"><div class="table-hdr"><span class="tbl-label">All Reviewed — Your Troop</span></div>
+        <table><thead><tr><th>Student</th><th>Type</th><th>Leave Type</th><th>From</th><th>Your Decision</th><th>Next Stage</th></tr></thead>
+        <tbody id="historyTbody"></tbody></table></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Leave Details</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const TROOPS=[
+  {id:'T1',username:'troop1',password:'troop123',name:'Lt. Cmdr. K. Gunasekera',unit:'Alpha Troop'},
+  {id:'T2',username:'troop2',password:'troop123',name:'Lt. Cmdr. M. Rajapaksha',unit:'Bravo Troop'},
+  {id:'T3',username:'troop3',password:'troop123',name:'Lt. Cmdr. V. Pathirana',unit:'Charlie Troop'},
+];
+function getLeaves(){return JSON.parse(localStorage.getItem('olms_leaves')||'[]');}
+function setLeaves(a){localStorage.setItem('olms_leaves',JSON.stringify(a));}
+function initDB(){if(!localStorage.getItem('olms_seeded')){localStorage.setItem('olms_leaves',JSON.stringify([]));localStorage.setItem('olms_seeded','1');}}
+initDB();
+let CU=null;
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  const found=TROOPS.find(t=>t.username===u&&t.password===p);
+  if(!found){showAuthMsg('Invalid credentials');return;}
+  CU=found;
+  localStorage.setItem('olms_currentTroop',JSON.stringify(CU));
+  document.getElementById('authSection').classList.add('hidden');
+  document.getElementById('appSection').classList.remove('hidden');
+  initApp();
+}
+function showAuthMsg(m){const el=document.getElementById('authMsg');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500);}
+function logout(){if(confirm('Logout?')){CU=null;localStorage.removeItem('olms_currentTroop');document.getElementById('authSection').classList.remove('hidden');document.getElementById('appSection').classList.add('hidden');}}
+
+function initApp(){
+  document.getElementById('rbName').textContent=CU.name;
+  document.getElementById('rbUnit').textContent=CU.unit;
+  document.getElementById('topUser').textContent=CU.username;
+  document.getElementById('avatarEl').textContent=CU.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase();
+  renderAll();
+}
+
+// Day scholars: HOD approved, troop pending, troopId matches
+function getDsPending(){return getLeaves().filter(l=>l.studentType==='dayscholar'&&l.troopId===CU.id&&l.hodStatus==='Approved'&&l.troopStatus==='Pending');}
+// Cadets: troop pending, troopId matches
+function getCdPending(){return getLeaves().filter(l=>l.studentType==='cadet'&&l.troopId===CU.id&&l.troopStatus==='Pending');}
+// All reviewed by this troop
+function getHistory(){return getLeaves().filter(l=>l.troopId===CU.id&&l.troopStatus!=='Pending');}
+
+function renderAll(){
+  const dsp=getDsPending();
+  const cdp=getCdPending();
+  const hist=getHistory();
+  document.getElementById('sDsPending').textContent=dsp.length;
+  document.getElementById('sCdPending').textContent=cdp.length;
+  document.getElementById('sApproved').textContent=hist.filter(l=>l.troopStatus==='Approved').length;
+  document.getElementById('sRejected').textContent=hist.filter(l=>l.troopStatus==='Rejected').length;
+  // All pending combined
+  renderCombinedPending([...dsp,...cdp]);
+  renderDsTable(dsp);
+  renderCdTable(cdp);
+  renderHistory(hist);
+}
+
+function renderCombinedPending(leaves){
+  const tbody=document.getElementById('allPendingTbody');
+  if(!leaves.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">No pending applications.</td></tr>';return;}
+  tbody.innerHTML=leaves.map(l=>`<tr>
+    <td><div class="td-name">${l.studentName}</div><div class="td-idx">${l.indexNumber}</div></td>
+    <td><span class="type-tag ${l.studentType==='cadet'?'cd':'ds'}">${l.studentType==='cadet'?'Cadet':'Day Scholar'}</span></td>
+    <td>${l.type}</td><td>${l.startDate}</td><td>${l.endDate}</td>
+    <td><span style="font-size:11px;color:var(--muted);">${l.studentType==='dayscholar'?'Stage 2 (Final)':'Stage 1 of 3'}</span></td>
+    <td><div class="action-btns">
+      <button class="btn-details" onclick="viewDetail(${l.id})">Details</button>
+      <button class="btn-approve" onclick="decide(${l.id},'Approved')">Approve</button>
+      <button class="btn-reject" onclick="decide(${l.id},'Rejected')">Reject</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderDsTable(leaves){
+  const tbody=document.getElementById('dsTbody');
+  if(!leaves.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">No Day Scholar leaves awaiting approval.</td></tr>';return;}
+  tbody.innerHTML=leaves.map(l=>`<tr>
+    <td><div class="td-name">${l.studentName}</div></td>
+    <td><span class="td-idx">${l.indexNumber}</span></td>
+    <td>${l.type}</td><td>${l.startDate}</td><td>${l.endDate}</td>
+    <td><span class="badge badge-approved">HOD Approved</span></td>
+    <td><div class="action-btns">
+      <button class="btn-details" onclick="viewDetail(${l.id})">Details</button>
+      <button class="btn-approve" onclick="decide(${l.id},'Approved')">Approve ✓</button>
+      <button class="btn-reject" onclick="decide(${l.id},'Rejected')">Reject</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderCdTable(leaves){
+  const tbody=document.getElementById('cdTbody');
+  if(!leaves.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">No Cadet leaves awaiting approval.</td></tr>';return;}
+  tbody.innerHTML=leaves.map(l=>`<tr>
+    <td><div class="td-name">${l.studentName}</div></td>
+    <td><span class="td-idx">${l.indexNumber}</span></td>
+    <td>${l.type}</td><td>${l.startDate}</td><td>${l.endDate}</td>
+    <td><div class="action-btns">
+      <button class="btn-details" onclick="viewDetail(${l.id})">Details</button>
+      <button class="btn-approve" onclick="decide(${l.id},'Approved')">Approve</button>
+      <button class="btn-reject" onclick="decide(${l.id},'Rejected')">Reject</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function renderHistory(leaves){
+  const tbody=document.getElementById('historyTbody');
+  if(!leaves.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">No history.</td></tr>';return;}
+  tbody.innerHTML=leaves.map(l=>{
+    const next=l.studentType==='dayscholar'?'PDF Ready (if Approved)':'Squadron Commander';
+    return `<tr>
+      <td><div class="td-name">${l.studentName}</div></td>
+      <td><span class="type-tag ${l.studentType==='cadet'?'cd':'ds'}">${l.studentType==='cadet'?'Cadet':'DS'}</span></td>
+      <td>${l.type}</td><td>${l.startDate}</td>
+      <td><span class="badge badge-${l.troopStatus.toLowerCase()}">${l.troopStatus}</span></td>
+      <td style="font-size:11px;color:var(--muted);">${next}</td>
+    </tr>`;
+  }).join('');
+}
+
+function decide(id,decision){
+  const comment=decision==='Rejected'?prompt('Rejection reason (optional):',''):'';
+  const leaves=getLeaves();
+  const idx=leaves.findIndex(l=>l.id===id);
+  if(idx<0)return;
+  leaves[idx].troopStatus=decision;
+  leaves[idx].troopComment=comment||'';
+  leaves[idx].troopApprovedAt=new Date().toLocaleString();
+  setLeaves(leaves);
+  const l=leaves[idx];
+  if(l.studentType==='dayscholar'){
+    showToast(decision==='Approved'?'✅ Day Scholar leave approved — student can download PDF':'❌ Rejected');
+  } else {
+    showToast(decision==='Approved'?'✅ Cadet leave forwarded to Squadron Commander':'❌ Rejected');
+  }
+  renderAll();
+}
+
+function viewDetail(id){
+  const l=getLeaves().find(x=>x.id===id);if(!l)return;
+  const isCadet=l.studentType==='cadet';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-row"><span class="modal-key">Student</span><span class="modal-val">${l.studentName}</span></div>
+    <div class="modal-row"><span class="modal-key">Index</span><span class="modal-val">${l.indexNumber}</span></div>
+    <div class="modal-row"><span class="modal-key">Type</span><span class="modal-val">${isCadet?'🎖️ Cadet':'🏠 Day Scholar'}</span></div>
+    <div class="modal-row"><span class="modal-key">Leave Type</span><span class="modal-val">${l.type}</span></div>
+    <div class="modal-row"><span class="modal-key">From</span><span class="modal-val">${l.startDate} ${l.startTime}</span></div>
+    <div class="modal-row"><span class="modal-key">To</span><span class="modal-val">${l.endDate} ${l.endTime}</span></div>
+    <div class="modal-row"><span class="modal-key">Reason</span><span class="modal-val">${l.reason}</span></div>
+    ${!isCadet?`<div class="modal-row"><span class="modal-key">HOD</span><span class="modal-val"><span class="badge badge-${l.hodStatus.toLowerCase()}">${l.hodStatus}</span></span></div>`:''}
+    <div class="modal-row"><span class="modal-key">Your Status</span><span class="modal-val"><span class="badge badge-${l.troopStatus.toLowerCase()}">${l.troopStatus}</span></span></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-details" onclick="closeModal()" style="padding:8px 16px;">Close</button>
+      ${l.troopStatus==='Pending'?`
+        <button class="btn-approve" onclick="decide(${l.id},'Approved');closeModal();" style="padding:8px 16px;">Approve</button>
+        <button class="btn-reject" onclick="decide(${l.id},'Rejected');closeModal();" style="padding:8px 16px;">Reject</button>`:''}
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeModal(){document.getElementById('detailModal').classList.remove('open');}
+
+function showView(v,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(v).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('pageTitle').textContent={dashboard:'Dashboard',dayscholar:'Day Scholar Queue',cadet:'Cadet Queue',history:'History'}[v]||v;
+  renderAll();
+}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+(function(){
+  initDB();
+  const saved=localStorage.getItem('olms_currentTroop');
+  if(saved){CU=JSON.parse(saved);document.getElementById('authSection').classList.add('hidden');document.getElementById('appSection').classList.remove('hidden');initApp();}
+})();
+</script>
+</body>
+</html>
