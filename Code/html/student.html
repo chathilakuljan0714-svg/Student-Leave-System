@@ -15,7 +15,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);min-height:
 .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(37,99,176,.35) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(224,123,32,.25) 0%,transparent 55%),linear-gradient(160deg,#050d1f 0%,#0a1540 50%,#0d1b5e 100%);padding:24px;}
 .login-card{width:100%;max-width:480px;background:rgba(255,255,255,.97);border-radius:28px;padding:48px 44px 40px;box-shadow:0 24px 80px rgba(13,27,94,.5);}
 .login-header{display:flex;align-items:center;gap:18px;margin-bottom:28px;padding-bottom:22px;border-bottom:2px solid #e8edf5;}
-.kdu-crest{width:72px;height:72px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:32px;border:3px solid var(--orange);box-shadow:0 0 0 5px rgba(224,123,32,.2);}
+.kdu-crest{width:72px;height:72px;border-radius:12px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:32px;border:3px solid var(--orange);box-shadow:0 0 0 5px rgba(224,123,32,.2);}
 .login-eyebrow{font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:3px;margin-bottom:4px;}
 .login-title{font-size:30px;font-weight:900;color:var(--navy);line-height:1;letter-spacing:-1px;}
 .login-sub{font-size:12px;color:#94a3b8;margin-top:4px;}
@@ -47,7 +47,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--white);min-height:
 .sidebar{width:256px;background:linear-gradient(180deg,var(--navy) 0%,#0a1435 100%);border-right:1px solid rgba(74,144,217,.12);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.3);}
 .main{margin-left:256px;flex:1;min-height:100vh;background:var(--bg);}
 .sidebar-brand{padding:20px;border-bottom:1px solid rgba(74,144,217,.15);display:flex;align-items:center;gap:12px;}
-.sb-crest{width:42px;height:42px;border-radius:50%;background:var(--navy2);border:2px solid var(--orange);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sb-crest{width:42px;height:42px;border-radius:8px;background:var(--navy2);border:2px solid var(--orange);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .sb-brand-text .olms{font-size:15px;font-weight:800;color:#fff;letter-spacing:1px;}
 .sb-brand-text .sub{font-size:10px;color:var(--orange2);letter-spacing:2px;font-weight:600;margin-top:1px;}
 .sidebar-user{margin:14px 16px 4px;background:rgba(74,144,217,.08);border:1px solid rgba(74,144,217,.2);border-radius:10px;padding:12px 14px;}
@@ -168,7 +168,8 @@ tr:hover td{background:rgba(74,144,217,.04);}
 <div class="login-page">
 <div class="login-card">
   <div class="login-header">
-    <div class="kdu-crest">🎓</div>
+    <div class="kdu-crest"><img src="KDU-LOGO-ORIGINAL-5x4-inch-copy.png" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
+    <div>
     <div>
       <div class="login-eyebrow">KDU Southern Campus</div>
       <div class="login-title">OLMS</div>
@@ -210,7 +211,7 @@ tr:hover td{background:rgba(74,144,217,.04);}
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-brand">
-      <div class="sb-crest">🎓</div>
+      <div class="sb-crest"><img src="kdu-logo.png" style="width:100%;height:100%;object-fit:contain;"></div>
       <div class="sb-brand-text">
         <div class="olms">OLMS</div>
         <div class="sub">KDU SOUTHERN</div>
