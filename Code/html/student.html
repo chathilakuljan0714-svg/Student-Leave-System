@@ -398,10 +398,18 @@ function doLogin(){
   const u=document.getElementById('loginUser').value.trim().toLowerCase();
   const p=document.getElementById('loginPass').value;
   const students=getStudents();
-  const found=students.find(s=>s.username.toLowerCase()===u && s.password===p);
-  if(!found){showLoginMsg('Invalid username or password');return;}
-  // Auto-fix selected type to match the account — no mismatch error
-  selectedType=found.studentType;
+ const found=students.find(s=>s.username.toLowerCase()===u && s.password===p);
+
+if(!found){
+   showLoginMsg('Invalid username or password');
+   return;
+}
+
+// Check selected type matches account type
+if(found.studentType !== selectedType){
+   showLoginMsg('Selected student type does not match this account');
+   return;
+}
   CU=found;
   localStorage.setItem('olms_currentStudent',JSON.stringify(CU));
   document.getElementById('loginSection').classList.add('hidden');
