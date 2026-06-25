@@ -497,8 +497,7 @@ function renderDashboard(){
         <td colspan="2"></td>
         <td style="white-space:nowrap;display:flex;gap:6px;">
           <button class="btn btn-sm btn-sm-blue" onclick="viewDetails(${l.id})">View</button>
-          ${approved?`<button class="btn btn-sm btn-sm-gold" onclick="downloadPDF(${l.id})">📥 PDF</button>`:''}
-        </td>
+          ${approved?`<button class="btn btn-sm btn-sm-gold" onclick="downloadLeavePass(${l.id})">📥 PDF</button>`:''}        </td>
       </tr>`;
     }
   }).join('');
@@ -584,7 +583,7 @@ function viewDetails(id){
     `<div style="margin-bottom:16px;">${tlHtml}</div>`+rows+
     `<div style="margin-top:18px;display:flex;gap:10px;">
       <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="width:auto;padding:9px 18px;">Close</button>
-      ${approved?`<button class="btn btn-orange btn-sm" style="width:auto;padding:9px 18px;" onclick="downloadPDF(${l.id});closeModal();">📥 Download PDF</button>`:''}
+      ${approved?`<button class="btn btn-orange btn-sm" style="width:auto;padding:9px 18px;" onclick="downloadLeavePass(${l.id});closeModal();">📥 Download PDF</button>`:''}
     </div>`;
   document.getElementById('leaveModal').classList.add('open');
 }
@@ -598,55 +597,125 @@ function buildTimeline(steps){
 function closeModal(){document.getElementById('leaveModal').classList.remove('open');}
 
 // ── PDF Download ───────────────────────────────────────────────
-function downloadPDF(id){
+function downloadLeavePass(id){
   const l=getLeaves().find(x=>x.id===id); if(!l)return;
   const isCadet=l.studentType==='cadet';
   const approved=isCadet
     ?(l.troopStatus==='Approved'&&l.sqnStatus==='Approved'&&l.sddStatus==='Approved')
     :(l.hodStatus==='Approved'&&l.troopStatus==='Approved');
   if(!approved){showToast('Not fully approved yet');return;}
-  const lines=[
-    '══════════════════════════════════════════════════════',
-    '       GENERAL SIR JOHN KOTELAWALA DEFENCE UNIVERSITY',
-    '                    SOUTHERN CAMPUS',
-    '             OFFICIAL LEAVE PASS / PERMIT',
-    '══════════════════════════════════════════════════════',
-    '',
-    `  Student Name   : ${l.studentName}`,
-    `  Index Number   : ${l.indexNumber}`,
-    `  Department     : ${l.department}`,
-    `  Student Type   : ${l.studentType==='cadet'?'Cadet':'Day Scholar'}`,
-    '',
-    '──────────────────────────────────────────────────────',
-    '  LEAVE DETAILS',
-    '──────────────────────────────────────────────────────',
-    `  Leave Type     : ${l.type}`,
-    `  From           : ${l.startDate} at ${l.startTime}`,
-    `  To             : ${l.endDate} at ${l.endTime}`,
-    `  Reason         : ${l.reason}`,
-    `  Applied On     : ${l.appliedDate}`,
-    '',
-    '──────────────────────────────────────────────────────',
-    '  APPROVAL RECORD',
-    '──────────────────────────────────────────────────────',
-  ];
-  if(isCadet){
-    lines.push(`  Troop Commander   : ${l.troopStatus}  ${l.troopApprovedAt||''}`);
-    lines.push(`  Squadron Cmdr     : ${l.sqnStatus}  ${l.sqnApprovedAt||''}`);
-    lines.push(`  Senior Dep. Dean  : ${l.sddStatus}  ${l.sddApprovedAt||''}`);
-  } else {
-    lines.push(`  HOD               : ${l.hodStatus}  ${l.hodApprovedAt||''}`);
-    lines.push(`  Troop Commander   : ${l.troopStatus}  ${l.troopApprovedAt||''}`);
-  }
-  lines.push('');lines.push('══════════════════════════════════════════════════════');
-  lines.push(`  Generated: ${new Date().toLocaleString()}  |  Ref: LV-${l.id}`);
-  lines.push('══════════════════════════════════════════════════════');
-  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=`LeavePass_${l.indexNumber}_${l.startDate}.txt`;
-  a.click();
-  showToast('📥 Leave pass downloaded!');
+
+  const approvalRows = isCadet ? `
+    <tr><td class="label">Troop Commander</td><td><span class="stamp approved">✔ APPROVED</span></td><td class="dt">${l.troopApprovedAt||'—'}</td></tr>
+    <tr><td class="label">Squadron Commander</td><td><span class="stamp approved">✔ APPROVED</span></td><td class="dt">${l.sqnApprovedAt||'—'}</td></tr>
+    <tr><td class="label">Senior Dep. Dean</td><td><span class="stamp approved">✔ APPROVED</span></td><td class="dt">${l.sddApprovedAt||'—'}</td></tr>
+  ` : `
+    <tr><td class="label">Head of Department</td><td><span class="stamp approved">✔ APPROVED</span></td><td class="dt">${l.hodApprovedAt||'—'}</td></tr>
+    <tr><td class="label">Troop Commander</td><td><span class="stamp approved">✔ APPROVED</span></td><td class="dt">${l.troopApprovedAt||'—'}</td></tr>
+  `;
+
+  const refNo = `LV-${l.id}-${l.startDate}`;
+  const generated = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Leave Pass — ${l.indexNumber}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;width:210mm;min-height:297mm;margin:0 auto;padding:0;}
+    @page{size:A4;margin:0;}
+    @media print{body{width:210mm;} .no-print{display:none!important;}}
+    .header{background:linear-gradient(135deg,#0d1b5e 0%,#1a3a8f 60%,#2563b0 100%);color:#fff;padding:28px 36px 22px;display:flex;align-items:center;gap:22px;position:relative;overflow:hidden;}
+    .header::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);border:40px solid rgba(255,255,255,.04);}
+    .crest-circle{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(224,123,32,.7);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;box-shadow:0 0 0 6px rgba(224,123,32,.15);}
+    .header-text .uni{font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:4px;}
+    .header-text .title{font-size:20px;font-weight:900;letter-spacing:-0.5px;line-height:1.1;}
+    .header-text .campus{font-size:12px;color:#f59332;font-weight:600;margin-top:3px;letter-spacing:1px;}
+    .doc-type{margin-left:auto;text-align:right;z-index:1;}
+    .doc-type .badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;}
+    .doc-type .ref{font-size:10px;color:rgba(255,255,255,.55);margin-top:6px;font-family:monospace;}
+    .accent-bar{height:5px;background:linear-gradient(90deg,#e07b20,#f59332,#d4a017);}
+    .body{padding:28px 36px 24px;}
+    .section{margin-bottom:22px;}
+    .section-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:#2563b0;border-bottom:2px solid #e8edf8;padding-bottom:7px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .section-title::before{content:'';display:inline-block;width:4px;height:14px;background:linear-gradient(180deg,#e07b20,#d4a017);border-radius:3px;}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;}
+    .info-item .key{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:3px;}
+    .info-item .val{font-size:13px;font-weight:600;color:#0f172a;border-bottom:1px dashed #e2e8f0;padding-bottom:5px;}
+    .info-item.full{grid-column:1/-1;}
+    .type-pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    .type-pill.ds{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;}
+    .type-pill.cd{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;}
+    .appr-table{width:100%;border-collapse:collapse;}
+    .appr-table th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;text-align:left;padding:7px 10px;background:#f8fafc;border:1px solid #e8edf5;}
+    .appr-table td{padding:9px 10px;font-size:12px;border:1px solid #e8edf5;vertical-align:middle;}
+    .appr-table td.label{font-weight:600;color:#334155;width:45%;}
+    .appr-table td.dt{font-size:11px;color:#64748b;font-family:monospace;white-space:nowrap;}
+    .stamp{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.5px;}
+    .stamp.approved{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;}
+    .notice{background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px;font-size:11px;color:#92400e;line-height:1.5;margin-bottom:20px;}
+    .footer{margin-top:auto;padding:16px 36px;background:#f8fafc;border-top:2px solid #e8edf5;display:flex;align-items:center;justify-content:space-between;}
+    .footer .gen{font-size:9px;color:#94a3b8;}
+    .footer .seal .seal-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:4px;}
+    .footer .seal .seal-box{width:120px;height:38px;border:1.5px dashed #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#94a3b8;}
+    .print-btn{position:fixed;top:16px;right:16px;padding:10px 22px;background:linear-gradient(135deg,#0d1b5e,#2563b0);color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(13,27,94,.35);z-index:999;}
+    .print-btn:hover{transform:translateY(-1px);}
+  </style>
+  </head><body>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Save as PDF</button>
+  <div class="header">
+    <div class="crest-circle">🎓</div>
+    <div class="header-text">
+      <div class="uni">General Sir John Kotelawala Defence University</div>
+      <div class="title">Official Leave Pass</div>
+      <div class="campus">Southern Campus · OLMS</div>
+    </div>
+    <div class="doc-type">
+      <div class="badge">Leave Permit</div>
+      <div class="ref">${refNo}</div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+  <div class="body">
+    <div class="section">
+      <div class="section-title">Student Information</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="key">Full Name</div><div class="val">${l.studentName}</div></div>
+        <div class="info-item"><div class="key">Index Number</div><div class="val" style="font-family:monospace">${l.indexNumber}</div></div>
+        <div class="info-item"><div class="key">Department</div><div class="val">${l.department}</div></div>
+        <div class="info-item"><div class="key">Student Type</div><div class="val"><span class="type-pill ${isCadet?'cd':'ds'}">${isCadet?'🎖️ Cadet':'🏠 Day Scholar'}</span></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Leave Details</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="key">Leave Type</div><div class="val">${l.type}</div></div>
+        <div class="info-item"><div class="key">Applied On</div><div class="val">${l.appliedDate}</div></div>
+        <div class="info-item"><div class="key">From</div><div class="val">${l.startDate} at ${l.startTime}</div></div>
+        <div class="info-item"><div class="key">To</div><div class="val">${l.endDate} at ${l.endTime}</div></div>
+        <div class="info-item full"><div class="key">Reason</div><div class="val" style="font-weight:400;color:#334155;">${l.reason}</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Approval Record</div>
+      <table class="appr-table">
+        <thead><tr><th>Authority</th><th>Status</th><th>Date &amp; Time</th></tr></thead>
+        <tbody>${approvalRows}</tbody>
+      </table>
+    </div>
+    <div class="notice">⚠️ This leave pass is valid only for the period stated above. The student must report back on time. Any extension must be approved in advance through the OLMS portal.</div>
+  </div>
+  <div class="footer">
+    <div class="gen"><div>Generated: ${generated}</div><div style="margin-top:3px;">Ref: ${refNo}</div></div>
+    <div class="seal"><div class="seal-label">Authorised Stamp</div><div class="seal-box">Official Seal</div></div>
+  </div>
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+  showToast('📄 Leave Pass opened — save as PDF!');
 }
 
 // ── Profile ────────────────────────────────────────────────────
